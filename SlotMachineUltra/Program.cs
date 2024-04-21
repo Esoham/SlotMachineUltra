@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+
 class SlotMachineGame
 {
     private const int GRID_SIZE = 3;
@@ -8,6 +9,13 @@ class SlotMachineGame
     private static readonly Random RANDOM = new Random();
     private const int STARTING_PLAYER_MONEY = 100;
     private const int MAX_BET_MULTIPLIER = 5;
+
+    // Constants for the number of lines bet per mode
+    private const int LINES_CENTER_HORIZONTAL = 1;
+    private const int LINES_HORIZONTAL = GRID_SIZE;
+    private const int LINES_VERTICAL = GRID_SIZE;
+    private const int LINES_DIAGONALS = 2;
+    private const int LINES_ALL = GRID_SIZE * 2 + 2; // Grid size related calculations
 
     private enum BetChoice
     {
@@ -57,19 +65,18 @@ class SlotMachineGame
     private static BetChoice GetPlayerChoice()
     {
         Console.WriteLine("Choose your bet:");
-        Console.WriteLine("1. Center Horizontal Line");
-        Console.WriteLine("2. All Horizontal Lines");
-        Console.WriteLine("3. All Vertical Lines");
-        Console.WriteLine("4. Both Diagonals");
-        Console.WriteLine("5. All Lines");
+        foreach (BetChoice choice in Enum.GetValues(typeof(BetChoice)))
+        {
+            Console.WriteLine($"{(int)choice}. {choice} ({GetLinesToBet(choice)} lines)");
+        }
 
-        int choice;
-        while (!int.TryParse(Console.ReadLine(), out choice) || choice < 1 || choice > 5)
+        int choiceInput;
+        while (!int.TryParse(Console.ReadLine(), out choiceInput) || !Enum.IsDefined(typeof(BetChoice), choiceInput))
         {
             Console.WriteLine("Invalid choice. Please try again.");
         }
 
-        return (BetChoice)choice;
+        return (BetChoice)choiceInput;
     }
 
     private static int GetLinesToBet(BetChoice choice)
@@ -77,14 +84,15 @@ class SlotMachineGame
         switch (choice)
         {
             case BetChoice.CenterHorizontalLine:
-                return 1;
+                return LINES_CENTER_HORIZONTAL;
             case BetChoice.AllHorizontalLines:
+                return LINES_HORIZONTAL;
             case BetChoice.AllVerticalLines:
-                return GRID_SIZE;
+                return LINES_VERTICAL;
             case BetChoice.BothDiagonals:
-                return 2;
+                return LINES_DIAGONALS;
             case BetChoice.AllLines:
-                return GRID_SIZE * 2 + 2;
+                return LINES_ALL;
             default:
                 return 0;
         }
@@ -108,7 +116,7 @@ class SlotMachineGame
         {
             for (int j = 0; j < GRID_SIZE; j++)
             {
-                grid[i, j] = ((int)RANDOM.Next(MIN_SYMBOL_VALUE, MAX_SYMBOL_VALUE + 1)).ToString();
+                grid[i, j] = RANDOM.Next(MIN_SYMBOL_VALUE, MAX_SYMBOL_VALUE + 1).ToString();
             }
         }
         return grid;
@@ -230,7 +238,9 @@ class SlotMachineGame
 
         if (isWinningLine)
         {
-            winnings = wagerPerLine * payouts[firstSymbol];
+
+           
+          winnings = wagerPerLine * payouts[firstSymbol];
         }
 
         return winnings;
