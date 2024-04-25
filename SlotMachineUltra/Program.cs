@@ -19,6 +19,13 @@ class SlotMachineGame
         AllLines
     }
 
+    // Constants for the number of lines corresponding to each betting option
+    private const int LinesCenterHorizontal = 1;
+    private const int LinesHorizontal = GridSize;
+    private const int LinesVertical = GridSize;
+    private const int LinesDiagonals = 2;
+    private const int LinesAll = GridSize * 2 + 2;
+
     // Symbol Constants
     private const string SymbolOne = "1";
     private const string SymbolTwo = "2";
@@ -103,11 +110,11 @@ class SlotMachineGame
     {
         switch (choice)
         {
-            case BetChoice.CenterHorizontalLine: return 1;
+            case BetChoice.CenterHorizontalLine: return LinesCenterHorizontal;
             case BetChoice.AllHorizontalLines:
-            case BetChoice.AllVerticalLines: return GridSize;
-            case BetChoice.BothDiagonals: return 2;
-            case BetChoice.AllLines: return GridSize * 2 + 2;
+            case BetChoice.AllVerticalLines: return LinesHorizontal;
+            case BetChoice.BothDiagonals: return LinesDiagonals;
+            case BetChoice.AllLines: return LinesAll;
             default: throw new ArgumentOutOfRangeException(nameof(choice), "Invalid betting choice");
         }
     }
@@ -133,7 +140,7 @@ class SlotMachineGame
         {
             for (int j = 0; j < GridSize; j++)
             {
-                grid[i, j] = random.Next(MinSymbolValue, MaxSymbolValue + 1).ToString();
+                grid[i, j] = random.Next(MinSymbolValue, MaxSymbolValue + 1).ToString();  // Simplified random number generation
             }
         }
         return grid;
@@ -155,8 +162,6 @@ class SlotMachineGame
     private static int CalculateWinnings(string[,] grid, BetChoice choice, int wagerPerLine)
     {
         int winnings = 0;
-
-        // Use the static Payouts dictionary here
         if (choice == BetChoice.CenterHorizontalLine)
         {
             winnings += CheckLine(grid, 1, wagerPerLine, Payouts);
@@ -219,7 +224,7 @@ class SlotMachineGame
         return isWinningLine ? wagerPerLine * payouts.GetValueOrDefault(firstSymbol, 0) : 0;
     }
 
-    private static int CheckDiagonal(string[,] grid, bool isTopLeftToBottomRight, int wagerPerLine, Dictionary<string, int> payouts)
+    private static int CheckDiagonal(string[,] grid, bool isTopLeftToBottomRight, int wagerPerine, Dictionary<string, int> payouts)
     {
         string firstSymbol = isTopLeftToBottomRight ? grid[0, 0] : grid[0, GridSize - 1];
         bool isWinningLine = true;
@@ -234,7 +239,7 @@ class SlotMachineGame
             }
         }
 
-        return isWinningLine ? wagerPerLine * payouts.GetValueOrDefault(firstSymbol, 0) : 0;
+        return isWinningLine ? wagerPerine * payouts.GetValueOrDefault(firstSymbol, 0) : 0;
     }
 
     private static void ShowRoundResult(int winnings, int wager)
