@@ -26,28 +26,14 @@ class SlotMachineGame
     private const int LinesDiagonals = 2;
     private const int LinesAll = GridSize * 2 + 2;
 
-    // Symbol Constants
-    private const string SymbolOne = "1";
-    private const string SymbolTwo = "2";
-    private const string SymbolThree = "3";
-    private const string SymbolFour = "4";
-    private const string SymbolFive = "5";
-
-    // Payout Constants
-    private const int PayoutOne = 2;
-    private const int PayoutTwo = 3;
-    private const int PayoutThree = 4;
-    private const int PayoutFour = 5;
-    private const int PayoutFive = 10;
-
     // Payout Dictionary
     private static readonly Dictionary<string, int> Payouts = new Dictionary<string, int>
     {
-        {SymbolOne, PayoutOne},
-        {SymbolTwo, PayoutTwo},
-        {SymbolThree, PayoutThree},
-        {SymbolFour, PayoutFour},
-        {SymbolFive, PayoutFive}
+        {"1", 2},
+        {"2", 3},
+        {"3", 4},
+        {"4", 5},
+        {"5", 10}
     };
 
     static void Main()
@@ -71,7 +57,7 @@ class SlotMachineGame
             }
 
             playerMoney -= totalWager;
-            string[,] grid = GenerateSlotOutcomes();
+            int[,] grid = GenerateSlotOutcomes();
             DisplayGrid(grid);
             int totalWinnings = CalculateWinnings(grid, choice, wagerPerLine);
             playerMoney += totalWinnings;
@@ -133,20 +119,20 @@ class SlotMachineGame
         }
     }
 
-    private static string[,] GenerateSlotOutcomes()
+    private static int[,] GenerateSlotOutcomes()
     {
-        string[,] grid = new string[GridSize, GridSize];
+        int[,] grid = new int[GridSize, GridSize];
         for (int i = 0; i < GridSize; i++)
         {
             for (int j = 0; j < GridSize; j++)
             {
-                grid[i, j] = random.Next(MinSymbolValue, MaxSymbolValue + 1).ToString();  // Simplified random number generation
+                grid[i, j] = random.Next(MinSymbolValue, MaxSymbolValue + 1);
             }
         }
         return grid;
     }
 
-    private static void DisplayGrid(string[,] grid)
+    private static void DisplayGrid(int[,] grid)
     {
         Console.WriteLine("Slot Machine Outcome:");
         for (int i = 0; i < GridSize; i++)
@@ -159,43 +145,45 @@ class SlotMachineGame
         }
     }
 
-    private static int CalculateWinnings(string[,] grid, BetChoice choice, int wagerPerLine)
+    private static int CalculateWinnings(int[,] grid, BetChoice choice, int wagerPerLine)
     {
         int winnings = 0;
         if (choice == BetChoice.CenterHorizontalLine)
         {
-            winnings += CheckLine(grid, 1, wagerPerLine, Payouts);
+            winnings += CheckLine(grid, 1, wagerPerLine);
         }
         else if (choice == BetChoice.AllHorizontalLines || choice == BetChoice.AllVerticalLines)
         {
             for (int i = 0; i < GridSize; i++)
             {
-                winnings += (choice == BetChoice.AllHorizontalLines) ? CheckLine(grid, i, wagerPerLine, Payouts) : CheckColumn(grid, i, wagerPerLine, Payouts);
+                winnings += (choice == BetChoice.AllHorizontalLines) ? CheckLine(grid, i, wagerPerLine) : CheckColumn(grid, i, wagerPerLine);
             }
         }
         else if (choice == BetChoice.BothDiagonals)
         {
-            winnings += CheckDiagonal(grid, true, wagerPerLine, Payouts);
-            winnings += CheckDiagonal(grid, false, wagerPerLine, Payouts);
+            winnings += CheckDiagonal(grid, true, wagerPerLine);
+            winnings += CheckDiagonal(grid, false, wagerPerLine);
         }
         else if (choice == BetChoice.AllLines)
         {
             for (int i = 0; i < GridSize; i++)
             {
-                winnings += CheckLine(grid, i, wagerPerLine, Payouts);
-                winnings += CheckColumn(grid, i, wagerPerLine, Payouts);
+                winnings += CheckLine(grid, i, wagerPerLine);
+                winnings += CheckColumn(grid, i, wagerPerLine);
             }
-            winnings += CheckDiagonal(grid, true, wagerPerLine, Payouts);
-            winnings += CheckDiagonal(grid, false, wagerPerLine, Payouts);
+            winnings += CheckDiagonal(grid, true, wagerPerLine);
+            winnings += CheckDiagonal(grid, false, wagerPerLine);
         }
 
         return winnings;
     }
 
-    private static int CheckLine(string[,] grid, int row, int wagerPerLine, Dictionary<string, int> payouts)
+    // Optimized Check methods
+    private static int CheckLine(int[,] grid, int row, int wagerPerLine)
     {
-        string firstSymbol = grid[row, 0];
+        int firstSymbol = grid[row, 0];
         bool isWinningLine = true;
+
         for (int col = 1; col < GridSize; col++)
         {
             if (grid[row, col] != firstSymbol)
@@ -205,13 +193,14 @@ class SlotMachineGame
             }
         }
 
-        return isWinningLine ? wagerPerLine * payouts.GetValueOrDefault(firstSymbol, 0) : 0;
+        return isWinningLine ? wagerPerLine * Payouts.GetValueOrDefault(firstSymbol.ToString(), 0) : 0;
     }
 
-    private static int CheckColumn(string[,] grid, int col, int wagerPerLine, Dictionary<string, int> payouts)
+    private static int CheckColumn(int[,] grid, int col, int wagerPerLine)
     {
-        string firstSymbol = grid[0, col];
+        int firstSymbol = grid[0, col];
         bool isWinningLine = true;
+
         for (int row = 1; row < GridSize; row++)
         {
             if (grid[row, col] != firstSymbol)
@@ -221,25 +210,25 @@ class SlotMachineGame
             }
         }
 
-        return isWinningLine ? wagerPerLine * payouts.GetValueOrDefault(firstSymbol, 0) : 0;
+        return isWinningLine ? wagerPerLine * Payouts.GetValueOrDefault(firstSymbol.ToString(), 0) : 0;
     }
 
-    private static int CheckDiagonal(string[,] grid, bool isTopLeftToBottomRight, int wagerPerine, Dictionary<string, int> payouts)
+    private static int CheckDiagonal(int[,] grid, bool isTopLeftToBottomRight, int wagerPerLine)
     {
-        string firstSymbol = isTopLeftToBottomRight ? grid[0, 0] : grid[0, GridSize - 1];
+        int firstSymbol = isTopLeftToBottomRight ? grid[0, 0] : grid[0, GridSize - 1];
         bool isWinningLine = true;
+
         for (int i = 1; i < GridSize; i++)
         {
-            int row = i;
-            int col = isTopLeftToBottomRight ? i : GridSize - 1 - i;
-            if (grid[row, col] != firstSymbol)
+            int col = isTopLeftToBottomRight ? i : GridSize - i - 1;
+            if (grid[i, col] != firstSymbol)
             {
                 isWinningLine = false;
                 break;
             }
         }
 
-        return isWinningLine ? wagerPerine * payouts.GetValueOrDefault(firstSymbol, 0) : 0;
+        return isWinningLine ? wagerPerLine * Payouts.GetValueOrDefault(firstSymbol.ToString(), 0) : 0;
     }
 
     private static void ShowRoundResult(int winnings, int wager)
