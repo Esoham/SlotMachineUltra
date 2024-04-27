@@ -26,7 +26,7 @@ class SlotMachineGame
     private const int LinesDiagonals = 2;
     private const int LinesAll = GridSize * 2 + 2;
 
-    // Payout Dictionary
+    // Payout Dictionary as a static readonly field
     private static readonly Dictionary<string, int> Payouts = new Dictionary<string, int>
     {
         {"1", 2},
@@ -148,87 +148,79 @@ class SlotMachineGame
     private static int CalculateWinnings(int[,] grid, BetChoice choice, int wagerPerLine)
     {
         int winnings = 0;
-        if (choice == BetChoice.CenterHorizontalLine)
+        switch (choice)
         {
-            winnings += CheckLine(grid, 1, wagerPerLine);
-        }
-        else if (choice == BetChoice.AllHorizontalLines || choice == BetChoice.AllVerticalLines)
-        {
-            for (int i = 0; i < GridSize; i++)
-            {
-                winnings += (choice == BetChoice.AllHorizontalLines) ? CheckLine(grid, i, wagerPerLine) : CheckColumn(grid, i, wagerPerLine);
-            }
-        }
-        else if (choice == BetChoice.BothDiagonals)
-        {
-            winnings += CheckDiagonal(grid, true, wagerPerLine);
-            winnings += CheckDiagonal(grid, false, wagerPerLine);
-        }
-        else if (choice == BetChoice.AllLines)
-        {
-            for (int i = 0; i < GridSize; i++)
-            {
-                winnings += CheckLine(grid, i, wagerPerLine);
-                winnings += CheckColumn(grid, i, wagerPerLine);
-            }
-            winnings += CheckDiagonal(grid, true, wagerPerLine);
-            winnings += CheckDiagonal(grid, false, wagerPerLine);
+            case BetChoice.CenterHorizontalLine:
+                winnings += CheckLine(grid, 1, wagerPerLine);
+                break;
+            case BetChoice.AllHorizontalLines:
+                for (int i = 0; i < GridSize; i++)
+                {
+                    winnings += CheckLine(grid, i, wagerPerLine);
+                }
+                break;
+            case BetChoice.AllVerticalLines:
+                for (int i = 0; i < GridSize; i++)
+                {
+                    winnings += CheckColumn(grid, i, wagerPerLine);
+                }
+                break;
+            case BetChoice.BothDiagonals:
+                winnings += CheckDiagonal(grid, true, wagerPerLine);
+                winnings += CheckDiagonal(grid, false, wagerPerLine);
+                break;
+            case BetChoice.AllLines:
+                for (int i = 0; i < GridSize; i++)
+                {
+                    winnings += CheckLine(grid, i, wagerPerLine);
+                    winnings += CheckColumn(grid, i, wagerPerLine);
+                }
+                winnings += CheckDiagonal(grid, true, wagerPerLine);
+                winnings += CheckDiagonal(grid, false, wagerPerLine);
+                break;
         }
 
         return winnings;
     }
 
-    // Optimized Check methods
     private static int CheckLine(int[,] grid, int row, int wagerPerLine)
     {
         int firstSymbol = grid[row, 0];
-        bool isWinningLine = true;
-
         for (int col = 1; col < GridSize; col++)
         {
             if (grid[row, col] != firstSymbol)
             {
-                isWinningLine = false;
-                break;
+                return 0; // Not a winning line
             }
         }
-
-        return isWinningLine ? wagerPerLine * Payouts.GetValueOrDefault(firstSymbol.ToString(), 0) : 0;
+        return wagerPerLine * Payouts[firstSymbol.ToString()];
     }
 
     private static int CheckColumn(int[,] grid, int col, int wagerPerLine)
     {
         int firstSymbol = grid[0, col];
-        bool isWinningLine = true;
-
         for (int row = 1; row < GridSize; row++)
         {
             if (grid[row, col] != firstSymbol)
             {
-                isWinningLine = false;
-                break;
+                return 0; // Not a winning column
             }
         }
-
-        return isWinningLine ? wagerPerLine * Payouts.GetValueOrDefault(firstSymbol.ToString(), 0) : 0;
+        return wagerPerLine * Payouts[firstSymbol.ToString()];
     }
 
     private static int CheckDiagonal(int[,] grid, bool isTopLeftToBottomRight, int wagerPerLine)
     {
         int firstSymbol = isTopLeftToBottomRight ? grid[0, 0] : grid[0, GridSize - 1];
-        bool isWinningLine = true;
-
         for (int i = 1; i < GridSize; i++)
         {
             int col = isTopLeftToBottomRight ? i : GridSize - i - 1;
             if (grid[i, col] != firstSymbol)
             {
-                isWinningLine = false;
-                break;
+                return 0; // Not a winning diagonal
             }
         }
-
-        return isWinningLine ? wagerPerLine * Payouts.GetValueOrDefault(firstSymbol.ToString(), 0) : 0;
+        return wagerPerLine * Payouts[firstSymbol.ToString()];
     }
 
     private static void ShowRoundResult(int winnings, int wager)
