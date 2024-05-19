@@ -1,12 +1,8 @@
 ﻿using System;
-
-namespace SlotMachine
+class Program
 {
-    class Program
+    static void Main(string[] args)
     {
-        static void Main(string[] args)
-        {
-            SlotMachineGame.StartGame();
-        }
+        SlotMachineGame.StartGame();
     }
 }
