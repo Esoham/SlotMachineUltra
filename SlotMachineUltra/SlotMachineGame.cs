@@ -1,140 +1,90 @@
-﻿using System;
-
-namespace SlotMachine
+﻿namespace SlotMachine
 {
-    public static class SlotMachineGame
+    public class SlotMachineGame
     {
         private static readonly Random random = new Random();
-        private static readonly int[,] PAYOUTS = new int[,]
-        {
-            { 1, 2 }, { 2, 3 }, { 3, 4 }, { 4, 5 }, { 5, 10 }
-        };
 
-        public static void StartGame()
-        {
-            int playerMoney = Constants.STARTING_PLAYER_MONEY;
-            SlotMachineUI.DisplayMessage("Welcome to the Slot Machine Game!");
-
-            while (playerMoney > 0)
-            {
-                SlotMachineUI.DisplayMessage($"Current Money: ${playerMoney}");
-                BetChoice betChoice = SlotMachineUI.GetPlayerChoice();
-                int linesToBet = GetLinesToBet(betChoice);
-                int maxBetPerLine = playerMoney / (linesToBet * Constants.MAX_WAGER);
-                int wagerPerLine = SlotMachineUI.GetWagerPerLine(maxBetPerLine);
-                int totalWager = wagerPerLine * linesToBet;
-
-                if (totalWager > playerMoney)
-                {
-                    SlotMachineUI.DisplayMessage("You do not have enough money for that wager.");
-                    continue;
-                }
-
-                playerMoney -= totalWager;
-                int[,] grid = GenerateSlotOutcomes();
-                SlotMachineUI.DisplayGrid(grid);
-                int totalWinnings = CalculateWinnings(grid, betChoice, wagerPerLine);
-                playerMoney += totalWinnings;
-
-                SlotMachineUI.DisplayRoundResult(totalWinnings, totalWager);
-            }
-
-            SlotMachineUI.DisplayMessage("Game Over! You've run out of money.");
-        }
-
-        private static int[,] GenerateSlotOutcomes()
+        public static int[,] GenerateSlotOutcomes()
         {
             int[,] grid = new int[Constants.GRID_SIZE, Constants.GRID_SIZE];
             for (int i = 0; i < Constants.GRID_SIZE; i++)
             {
                 for (int j = 0; j < Constants.GRID_SIZE; j++)
                 {
-                    grid[i, j] = random.Next(Constants.MIN_SLOT_NUMBER, Constants.MAX_SLOT_NUMBER);
+                    grid[i, j] = random.Next(Constants.SYMBOL_MIN, Constants.SYMBOL_MAX);
                 }
             }
             return grid;
         }
 
-        private static int GetLinesToBet(BetChoice choice)
-        {
-            return choice switch
-            {
-                BetChoice.CenterHorizontalLine => 1,
-                BetChoice.AllHorizontalLines => Constants.GRID_SIZE,
-                BetChoice.AllVerticalLines => Constants.GRID_SIZE,
-                BetChoice.BothDiagonals => 2,
-                BetChoice.AllLines => Constants.GRID_SIZE * 2 + 2,
-                _ => throw new ArgumentOutOfRangeException(nameof(choice), "Invalid betting choice"),
-            };
-        }
-
-        private static int CalculateWinnings(int[,] grid, BetChoice choice, int wagerPerLine)
+        public static int CalculateWinnings(int[,] grid, BetChoice choice, int wagerPerLine)
         {
             int winnings = 0;
-            if (choice == BetChoice.CenterHorizontalLine)
+            switch (choice)
             {
-                winnings += CheckLine(grid, 1, wagerPerLine);
-            }
-            else if (choice == BetChoice.AllHorizontalLines)
-            {
-                for (int i = 0; i < Constants.GRID_SIZE; i++)
-                {
-                    winnings += CheckLine(grid, i, wagerPerLine);
-                }
-            }
-            else if (choice == BetChoice.AllVerticalLines)
-            {
-                for (int j = 0; j < Constants.GRID_SIZE; j++)
-                {
-                    winnings += CheckColumn(grid, j, wagerPerLine);
-                }
-            }
-            else if (choice == BetChoice.BothDiagonals)
-            {
-                winnings += CheckDiagonals(grid, wagerPerLine);
-            }
-            else if (choice == BetChoice.AllLines)
-            {
-                for (int i = 0; i < Constants.GRID_SIZE; i++)
-                {
-                    winnings += CheckLine(grid, i, wagerPerLine);
-                    winnings += CheckColumn(grid, i, wagerPerLine);
-                }
-                winnings += CheckDiagonals(grid, wagerPerLine);
+                case BetChoice.CenterHorizontalLine:
+                    if (AllSymbolsMatch(grid, Constants.GRID_SIZE / 2, true))
+                        winnings += Constants.PAYOUTS[wagerPerLine];
+                    break;
+                case BetChoice.AllHorizontalLines:
+                    for (int i = 0; i < Constants.GRID_SIZE; i++)
+                    {
+                        if (AllSymbolsMatch(grid, i, true))
+                            winnings += Constants.PAYOUTS[wagerPerLine];
+                    }
+                    break;
+                case BetChoice.AllVerticalLines:
+                    for (int j = 0; j < Constants.GRID_SIZE; j++)
+                    {
+                        if (AllSymbolsMatch(grid, j, false))
+                            winnings += Constants.PAYOUTS[wagerPerLine];
+                    }
+                    break;
+                case BetChoice.BothDiagonals:
+                    if (AllSymbolsMatch(grid, 0, 0, true) || AllSymbolsMatch(grid, 0, Constants.GRID_SIZE - 1, false))
+                        winnings += Constants.PAYOUTS[wagerPerLine];
+                    break;
+                case BetChoice.AllLines:
+                    for (int i = 0; i < Constants.GRID_SIZE; i++)
+                    {
+                        if (AllSymbolsMatch(grid, i, true) || AllSymbolsMatch(grid, i, false))
+                            winnings += Constants.PAYOUTS[wagerPerLine];
+                    }
+                    if (AllSymbolsMatch(grid, 0, 0, true) || AllSymbolsMatch(grid, 0, Constants.GRID_SIZE - 1, false))
+                        winnings += Constants.PAYOUTS[wagerPerLine];
+                    break;
             }
             return winnings;
         }
 
-        private static int CheckLine(int[,] grid, int line, int wagerPerLine)
+        private static bool AllSymbolsMatch(int[,] grid, int index, bool isRow)
         {
-            for (int j = 1; j < Constants.GRID_SIZE; j++)
-            {
-                if (grid[line, j] != grid[line, 0]) return 0;
-            }
-            return wagerPerLine * PAYOUTS[grid[line, 0] - 1, 1];
-        }
-
-        private static int CheckColumn(int[,] grid, int column, int wagerPerLine)
-        {
+            int symbol = isRow ? grid[index, 0] : grid[0, index];
             for (int i = 1; i < Constants.GRID_SIZE; i++)
             {
-                if (grid[i, column] != grid[0, column]) return 0;
+                if (isRow)
+                {
+                    if (grid[index, i] != symbol)
+                        return false;
+                }
+                else
+                {
+                    if (grid[i, index] != symbol)
+                        return false;
+                }
             }
-            return wagerPerLine * PAYOUTS[grid[0, column] - 1, 1];
+            return true;
         }
 
-        private static int CheckDiagonals(int[,] grid, int wagerPerLine)
+        private static bool AllSymbolsMatch(int[,] grid, int startX, int startY, bool isTopLeftToBottomRight)
         {
-            int winnings = 0;
-            bool leftToRight = true, rightToLeft = true;
+            int symbol = grid[startX, startY];
             for (int i = 1; i < Constants.GRID_SIZE; i++)
             {
-                if (grid[i, i] != grid[0, 0]) leftToRight = false;
-                if (grid[i, Constants.GRID_SIZE - i - 1] != grid[0, Constants.GRID_SIZE - 1]) rightToLeft = false;
+                if (grid[startX + i, isTopLeftToBottomRight ? startY + i : startY - i] != symbol)
+                    return false;
             }
-            if (leftToRight) winnings += wagerPerLine * PAYOUTS[grid[0, 0] - 1, 1];
-            if (rightToLeft) winnings += wagerPerLine * PAYOUTS[grid[0, Constants.GRID_SIZE - 1] - 1, 1];
-            return winnings;
+            return true;
         }
     }
 }
