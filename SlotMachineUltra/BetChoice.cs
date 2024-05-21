@@ -1,9 +1,11 @@
-﻿public enum BetChoice
+﻿namespace SlotMachine
 {
-    CenterHorizontalLine = 1,
-    AllHorizontalLines,
-    AllVerticalLines,
-    BothDiagonals,
-    AllLines
+    public enum BetChoice
+    {
+        CenterHorizontalLine = 1,
+        AllHorizontalLines,
+        AllVerticalLines,
+        BothDiagonals,
+        AllLines
+    }
 }
-
