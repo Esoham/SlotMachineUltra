@@ -1,6 +1,6 @@
 ﻿namespace SlotMachine
 {
-    public class SlotMachineGame
+    public static class SlotMachineGame
     {
         private static readonly Random random = new Random();
 
@@ -23,65 +23,53 @@
             switch (choice)
             {
                 case BetChoice.CenterHorizontalLine:
-                    if (AllSymbolsMatch(grid, Constants.GRID_SIZE / 2, true))
-                        winnings += Constants.PAYOUTS[wagerPerLine];
+                    if (IsWinningLine(grid, 1, 0, 1, 2))
+                        winnings += Constants.PAYOUTS[3] * wagerPerLine;
                     break;
                 case BetChoice.AllHorizontalLines:
                     for (int i = 0; i < Constants.GRID_SIZE; i++)
                     {
-                        if (AllSymbolsMatch(grid, i, true))
-                            winnings += Constants.PAYOUTS[wagerPerLine];
+                        if (IsWinningLine(grid, i, 0, i, 2))
+                            winnings += Constants.PAYOUTS[3] * wagerPerLine;
                     }
                     break;
                 case BetChoice.AllVerticalLines:
                     for (int j = 0; j < Constants.GRID_SIZE; j++)
                     {
-                        if (AllSymbolsMatch(grid, j, false))
-                            winnings += Constants.PAYOUTS[wagerPerLine];
+                        if (IsWinningLine(grid, 0, j, 2, j))
+                            winnings += Constants.PAYOUTS[3] * wagerPerLine;
                     }
                     break;
                 case BetChoice.BothDiagonals:
-                    if (AllSymbolsMatch(grid, 0, 0, true) || AllSymbolsMatch(grid, 0, Constants.GRID_SIZE - 1, false))
-                        winnings += Constants.PAYOUTS[wagerPerLine];
+                    if (IsWinningLine(grid, 0, 0, 2, 2) || IsWinningLine(grid, 0, 2, 2, 0))
+                        winnings += Constants.PAYOUTS[3] * wagerPerLine;
                     break;
                 case BetChoice.AllLines:
                     for (int i = 0; i < Constants.GRID_SIZE; i++)
                     {
-                        if (AllSymbolsMatch(grid, i, true) || AllSymbolsMatch(grid, i, false))
-                            winnings += Constants.PAYOUTS[wagerPerLine];
+                        if (IsWinningLine(grid, i, 0, i, 2))
+                            winnings += Constants.PAYOUTS[3] * wagerPerLine;
                     }
-                    if (AllSymbolsMatch(grid, 0, 0, true) || AllSymbolsMatch(grid, 0, Constants.GRID_SIZE - 1, false))
-                        winnings += Constants.PAYOUTS[wagerPerLine];
+                    for (int j = 0; j < Constants.GRID_SIZE; j++)
+                    {
+                        if (IsWinningLine(grid, 0, j, 2, j))
+                            winnings += Constants.PAYOUTS[3] * wagerPerLine;
+                    }
+                    if (IsWinningLine(grid, 0, 0, 2, 2) || IsWinningLine(grid, 0, 2, 2, 0))
+                        winnings += Constants.PAYOUTS[3] * wagerPerLine;
                     break;
             }
             return winnings;
         }
 
-        private static bool AllSymbolsMatch(int[,] grid, int index, bool isRow)
-        {
-            int symbol = isRow ? grid[index, 0] : grid[0, index];
-            for (int i = 1; i < Constants.GRID_SIZE; i++)
-            {
-                if (isRow)
-                {
-                    if (grid[index, i] != symbol)
-                        return false;
-                }
-                else
-                {
-                    if (grid[i, index] != symbol)
-                        return false;
-                }
-            }
-            return true;
-        }
-
-        private static bool AllSymbolsMatch(int[,] grid, int startX, int startY, bool isTopLeftToBottomRight)
+        private static bool IsWinningLine(int[,] grid, int startX, int startY, int endX, int endY)
         {
             int symbol = grid[startX, startY];
-            for (int i = 1; i < Constants.GRID_SIZE; i++)
+            int deltaX = (endX - startX) / 2;
+            int deltaY = (endY - startY) / 2;
+            for (int i = 1; i <= 2; i++)
             {
-                if (grid[startX + i, isTopLeftToBottomRight ? startY + i : startY - i] != symbol)
+                if (grid[startX + i * deltaX, startY + i * deltaY] != symbol)
                     return false;
             }
             return true;

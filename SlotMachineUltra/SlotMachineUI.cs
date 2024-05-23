@@ -1,5 +1,4 @@
-﻿using System;
-namespace SlotMachine
+﻿namespace SlotMachine
 {
     public static class SlotMachineUI
     {
@@ -19,7 +18,7 @@ namespace SlotMachine
 
                 if (totalWager > playerMoney)
                 {
-                    DisplayMessage("You do not have enough money for that wager.");
+                    DisplayMessage(Constants.NOT_ENOUGH_MONEY_MESSAGE);
                     continue;
                 }
 
@@ -35,14 +34,14 @@ namespace SlotMachine
             DisplayMessage(Constants.GAME_OVER_MESSAGE);
         }
 
-        public static BetChoice GetPlayerChoice()
+        private static BetChoice GetPlayerChoice()
         {
             while (true)
             {
-                Console.WriteLine("Choose your bet:");
+                DisplayMessage("Choose your bet:");
                 foreach (BetChoice option in Enum.GetValues(typeof(BetChoice)))
                 {
-                    Console.WriteLine($"{(int)option}. {option}");
+                    DisplayMessage($"{(int)option}. {option.ToString().Replace('_', ' ')}");
                 }
 
                 if (int.TryParse(Console.ReadLine(), out int selectedChoice) && Enum.IsDefined(typeof(BetChoice), selectedChoice))
@@ -50,56 +49,56 @@ namespace SlotMachine
                     return (BetChoice)selectedChoice;
                 }
 
-                Console.WriteLine("Invalid choice. Please try again.");
+                DisplayMessage(Constants.INVALID_WAGER_MESSAGE);
             }
         }
 
-        public static int GetWagerPerLine(int maxBetPerLine)
+        private static int GetWagerPerLine(int maxBetPerLine)
         {
             while (true)
             {
-                Console.Write($"Enter your wager per line (max ${maxBetPerLine}): ");
+                DisplayMessage($"Enter your wager per line (max ${maxBetPerLine}): ");
                 if (int.TryParse(Console.ReadLine(), out int wagerPerLine) && wagerPerLine >= 1 && wagerPerLine <= maxBetPerLine)
                 {
                     return wagerPerLine;
                 }
 
-                Console.WriteLine("Invalid wager. Please try again.");
+                DisplayMessage(Constants.INVALID_WAGER_MESSAGE);
             }
         }
 
         public static void DisplayGrid(int[,] grid)
         {
-            Console.WriteLine("Slot Machine Outcome:");
+            DisplayMessage("Slot Machine Outcome:");
             for (int i = 0; i < Constants.GRID_SIZE; i++)
             {
                 for (int j = 0; j < Constants.GRID_SIZE; j++)
                 {
                     Console.Write($"{grid[i, j]}{(j < Constants.GRID_SIZE - 1 ? " | " : "")}");
                 }
-                Console.WriteLine(i < Constants.GRID_SIZE - 1 ? "\n---+---+---" : "\n");
+                DisplayMessage(i < Constants.GRID_SIZE - 1 ? "\n---+---+---" : "\n");
             }
         }
 
-        public static void DisplayRoundResult(int winnings, int wager)
+        private static void DisplayRoundResult(int winnings, int wager)
         {
             if (winnings > 0)
             {
-                Console.WriteLine($"You won ${winnings}! Your total wager was ${wager}.");
+                DisplayMessage($"You won ${winnings}! Your total wager was ${wager}.");
             }
             else
             {
-                Console.WriteLine($"You did not win anything. Your total wager was ${wager}.");
+                DisplayMessage($"You did not win anything. Your total wager was ${wager}.");
             }
-            Console.WriteLine();
+            DisplayMessage();
         }
 
-        public static void DisplayMessage(string message)
+        public static void DisplayMessage(string message = "")
         {
             Console.WriteLine(message);
         }
 
-        public static int GetLinesToBet(BetChoice choice)
+        private static int GetLinesToBet(BetChoice choice)
         {
             switch (choice)
             {
