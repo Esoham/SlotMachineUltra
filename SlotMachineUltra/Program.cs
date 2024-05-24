@@ -1,10 +1,13 @@
 ﻿namespace SlotMachine
 {
-    public static class Program
+    /// <summary>
+    /// The main entry point for the Slot Machine game.
+    /// </summary>
+    class Program
     {
-        public static void Main()
+        static void Main(string[] args)
         {
-            SlotMachineUI.StartGame();
+            SlotMachineGame.StartGame();
         }
     }
 }

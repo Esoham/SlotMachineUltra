@@ -1,5 +1,8 @@
 ﻿namespace SlotMachine
 {
+    /// <summary>
+    /// Class containing constants used throughout the slot machine game.
+    /// </summary>
     public static class Constants
     {
         public const int GRID_SIZE = 3;
@@ -11,8 +14,10 @@
         public const string WELCOME_MESSAGE = "Welcome to the Slot Machine Game!";
         public const string GAME_OVER_MESSAGE = "Game Over! You've run out of money.";
         public const string INVALID_WAGER_MESSAGE = "Invalid wager. Please try again.";
-        public const string NOT_ENOUGH_MONEY_MESSAGE = "You do not have enough money for that wager.";
 
+        /// <summary>
+        /// Dictionary representing the payout values for different bet choices.
+        /// </summary>
         public static readonly Dictionary<int, int> PAYOUTS = new Dictionary<int, int>
         {
             {1, 2}, {2, 3}, {3, 4}, {4, 5}, {5, 10}
