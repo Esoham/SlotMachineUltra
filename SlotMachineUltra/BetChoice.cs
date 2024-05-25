@@ -1,7 +1,7 @@
 ﻿namespace SlotMachine
 {
     /// <summary>
-    /// Enum representing the different betting choices available in the slot machine game.
+    /// Enum representing different betting choices in the slot machine game.
     /// </summary>
     public enum BetChoice
     {

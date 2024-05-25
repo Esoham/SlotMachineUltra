@@ -7,7 +7,7 @@
     {
         static void Main(string[] args)
         {
-            SlotMachineGame.StartGame();
+            SlotMachineUI.StartGame();
         }
     }
 }

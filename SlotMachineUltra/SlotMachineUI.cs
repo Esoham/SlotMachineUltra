@@ -2,31 +2,57 @@
 namespace SlotMachine
 {
     /// <summary>
-    /// Static class responsible for user interaction in the slot machine game.
+    /// Class handling the user interface for the Slot Machine game.
     /// </summary>
     public static class SlotMachineUI
     {
         /// <summary>
-        /// Displays a message to the console.
+        /// Starts the Slot Machine game.
         /// </summary>
-        /// <param name="message">The message to display.</param>
-        public static void DisplayMessage(string message)
+        public static void StartGame()
         {
-            Console.WriteLine(message);
+            int playerMoney = Constants.STARTING_PLAYER_MONEY;
+            Console.WriteLine(Constants.WELCOME_MESSAGE);
+
+            while (playerMoney > 0)
+            {
+                Console.WriteLine($"Current Money: ${playerMoney}");
+                BetChoice betChoice = GetPlayerChoice();
+                int linesToBet = GetLinesToBet(betChoice);
+                int maxBetPerLine = playerMoney / (linesToBet * Constants.MAX_BET_MULTIPLIER);
+                int wagerPerLine = GetWagerPerLine(maxBetPerLine);
+                int totalWager = wagerPerLine * linesToBet;
+
+                if (totalWager > playerMoney)
+                {
+                    Console.WriteLine(Constants.INVALID_WAGER_MESSAGE);
+                    continue;
+                }
+
+                playerMoney -= totalWager;
+                int[,] grid = SlotMachineGame.GenerateSlotOutcomes();
+                DisplayGrid(grid);
+                int totalWinnings = SlotMachineGame.CalculateWinnings(grid, betChoice, wagerPerLine);
+                playerMoney += totalWinnings;
+
+                DisplayRoundResult(totalWinnings, totalWager);
+            }
+
+            Console.WriteLine(Constants.GAME_OVER_MESSAGE);
         }
 
         /// <summary>
-        /// Prompts the player to make a bet choice and returns the selected option.
+        /// Gets the player's bet choice.
         /// </summary>
         /// <returns>The player's bet choice.</returns>
-        public static BetChoice GetPlayerChoice()
+        private static BetChoice GetPlayerChoice()
         {
             while (true)
             {
                 Console.WriteLine("Choose your bet:");
                 foreach (BetChoice option in Enum.GetValues(typeof(BetChoice)))
                 {
-                    Console.WriteLine($"{(int)option}. {option}");
+                    Console.WriteLine($"{(int)option}. {option.ToString().Replace('_', ' ')}");
                 }
 
                 if (int.TryParse(Console.ReadLine(), out int selectedChoice) && Enum.IsDefined(typeof(BetChoice), selectedChoice))
@@ -39,11 +65,11 @@ namespace SlotMachine
         }
 
         /// <summary>
-        /// Prompts the player to enter a wager per line and returns the wager amount.
+        /// Gets the wager per line from the player.
         /// </summary>
-        /// <param name="maxBetPerLine">The maximum allowable wager per line.</param>
-        /// <returns>The wager amount per line.</returns>
-        public static int GetWagerPerLine(int maxBetPerLine)
+        /// <param name="maxBetPerLine">The maximum bet per line.</param>
+        /// <returns>The wager per line.</returns>
+        private static int GetWagerPerLine(int maxBetPerLine)
         {
             while (true)
             {
@@ -58,9 +84,9 @@ namespace SlotMachine
         }
 
         /// <summary>
-        /// Displays the slot machine grid.
+        /// Displays the slot outcomes grid.
         /// </summary>
-        /// <param name="grid">The grid to display.</param>
+        /// <param name="grid">The slot outcomes grid.</param>
         public static void DisplayGrid(int[,] grid)
         {
             Console.WriteLine("Slot Machine Outcome:");
@@ -75,10 +101,10 @@ namespace SlotMachine
         }
 
         /// <summary>
-        /// Displays the result of the round including winnings and total wager.
+        /// Displays the result of the round.
         /// </summary>
-        /// <param name="winnings">The amount won.</param>
-        /// <param name="wager">The total wager amount.</param>
+        /// <param name="winnings">The total winnings.</param>
+        /// <param name="wager">The total wager.</param>
         public static void DisplayRoundResult(int winnings, int wager)
         {
             if (winnings > 0)
@@ -93,13 +119,21 @@ namespace SlotMachine
         }
 
         /// <summary>
-        /// Asks the player if they want to play again.
+        /// Determines the number of lines to bet based on the player's bet choice.
         /// </summary>
-        /// <returns>True if the player wants to play again; otherwise, false.</returns>
-        public static bool AskToPlayAgain()
+        /// <param name="choice">The player's bet choice.</param>
+        /// <returns>The number of lines to bet.</returns>
+        private static int GetLinesToBet(BetChoice choice)
         {
-            Console.Write("Do you want to play again? (y/n): ");
-            return Console.ReadLine().Trim().ToLower() == "y";
+            switch (choice)
+            {
+                case BetChoice.CenterHorizontalLine: return 1;
+                case BetChoice.AllHorizontalLines:
+                case BetChoice.AllVerticalLines: return Constants.GRID_SIZE;
+                case BetChoice.BothDiagonals: return 2;
+                case BetChoice.AllLines: return Constants.GRID_SIZE * 2 + 2;
+                default: throw new ArgumentOutOfRangeException(nameof(choice), "Invalid betting choice");
+            }
         }
     }
 }

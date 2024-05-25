@@ -1,59 +1,18 @@
 ﻿using System;
-
 namespace SlotMachine
 {
     /// <summary>
-    /// Static class containing the core logic for the slot machine game.
+    /// Class containing the logic for the Slot Machine game.
     /// </summary>
     public static class SlotMachineGame
     {
         private static readonly Random random = new Random();
 
         /// <summary>
-        /// Starts the slot machine game.
+        /// Generates the outcomes for the slot machine.
         /// </summary>
-        public static void StartGame()
-        {
-            int playerMoney = Constants.STARTING_PLAYER_MONEY;
-            SlotMachineUI.DisplayMessage(Constants.WELCOME_MESSAGE);
-
-            while (playerMoney > 0)
-            {
-                SlotMachineUI.DisplayMessage($"Current Money: ${playerMoney}");
-                BetChoice betChoice = SlotMachineUI.GetPlayerChoice();
-                int linesToBet = GetLinesToBet(betChoice);
-                int maxBetPerLine = playerMoney / (linesToBet * Constants.MAX_BET_MULTIPLIER);
-                int wagerPerLine = SlotMachineUI.GetWagerPerLine(maxBetPerLine);
-                int totalWager = wagerPerLine * linesToBet;
-
-                if (totalWager > playerMoney)
-                {
-                    SlotMachineUI.DisplayMessage("You do not have enough money for that wager.");
-                    continue;
-                }
-
-                playerMoney -= totalWager;
-                int[,] grid = GenerateSlotOutcomes();
-                SlotMachineUI.DisplayGrid(grid);
-                int totalWinnings = CalculateWinnings(grid, betChoice, wagerPerLine);
-                playerMoney += totalWinnings;
-
-                SlotMachineUI.DisplayRoundResult(totalWinnings, totalWager);
-
-                if (!SlotMachineUI.AskToPlayAgain())
-                {
-                    break;
-                }
-            }
-
-            SlotMachineUI.DisplayMessage(Constants.GAME_OVER_MESSAGE);
-        }
-
-        /// <summary>
-        /// Generates the slot machine outcomes in a grid.
-        /// </summary>
-        /// <returns>The generated slot outcomes grid.</returns>
-        private static int[,] GenerateSlotOutcomes()
+        /// <returns>A 2D array representing the slot outcomes.</returns>
+        public static int[,] GenerateSlotOutcomes()
         {
             int[,] grid = new int[Constants.GRID_SIZE, Constants.GRID_SIZE];
             for (int i = 0; i < Constants.GRID_SIZE; i++)
@@ -67,64 +26,45 @@ namespace SlotMachine
         }
 
         /// <summary>
-        /// Calculates the winnings based on the grid, bet choice, and wager per line.
+        /// Calculates the total winnings based on the slot outcomes and the player's bet choice.
         /// </summary>
         /// <param name="grid">The slot outcomes grid.</param>
-        /// <param name="choice">The bet choice.</param>
+        /// <param name="choice">The player's bet choice.</param>
         /// <param name="wagerPerLine">The wager per line.</param>
         /// <returns>The total winnings.</returns>
-        private static int CalculateWinnings(int[,] grid, BetChoice choice, int wagerPerLine)
+        public static int CalculateWinnings(int[,] grid, BetChoice choice, int wagerPerLine)
         {
             int winnings = 0;
 
             switch (choice)
             {
                 case BetChoice.CenterHorizontalLine:
-                    if (IsWinningLine(grid, 1, 0, 1))
-                    {
-                        winnings += Constants.PAYOUTS[wagerPerLine];
-                    }
+                    winnings += IsWinningLine(grid, 1, 0, 1, 0) ? wagerPerLine * Constants.PAYOUTS[1] : 0;
                     break;
                 case BetChoice.AllHorizontalLines:
                     for (int i = 0; i < Constants.GRID_SIZE; i++)
                     {
-                        if (IsWinningLine(grid, i, 0, 1))
-                        {
-                            winnings += Constants.PAYOUTS[wagerPerLine];
-                        }
+                        winnings += IsWinningLine(grid, i, 0, 0, 1) ? wagerPerLine * Constants.PAYOUTS[2] : 0;
                     }
                     break;
                 case BetChoice.AllVerticalLines:
-                    for (int j = 0; j < Constants.GRID_SIZE; j++)
+                    for (int i = 0; i < Constants.GRID_SIZE; i++)
                     {
-                        if (IsWinningLine(grid, 0, j, Constants.GRID_SIZE))
-                        {
-                            winnings += Constants.PAYOUTS[wagerPerLine];
-                        }
+                        winnings += IsWinningLine(grid, 0, i, 1, 0) ? wagerPerLine * Constants.PAYOUTS[3] : 0;
                     }
                     break;
                 case BetChoice.BothDiagonals:
-                    if (IsWinningLine(grid, 0, 0, 1) || IsWinningLine(grid, 0, Constants.GRID_SIZE - 1, -1))
-                    {
-                        winnings += Constants.PAYOUTS[wagerPerLine];
-                    }
+                    winnings += IsWinningLine(grid, 0, 0, 1, 1) ? wagerPerLine * Constants.PAYOUTS[4] : 0;
+                    winnings += IsWinningLine(grid, 0, Constants.GRID_SIZE - 1, 1, -1) ? wagerPerLine * Constants.PAYOUTS[4] : 0;
                     break;
                 case BetChoice.AllLines:
                     for (int i = 0; i < Constants.GRID_SIZE; i++)
                     {
-                        if (IsWinningLine(grid, i, 0, 1))
-                        {
-                            winnings += Constants.PAYOUTS[wagerPerLine];
-                        }
-                        if (IsWinningLine(grid, 0, i, Constants.GRID_SIZE))
-                        {
-                            winnings += Constants.PAYOUTS[wagerPerLine];
-                        }
+                        winnings += IsWinningLine(grid, i, 0, 0, 1) ? wagerPerLine * Constants.PAYOUTS[5] : 0;
+                        winnings += IsWinningLine(grid, 0, i, 1, 0) ? wagerPerLine * Constants.PAYOUTS[5] : 0;
                     }
-                    if (IsWinningLine(grid, 0, 0, 1) || IsWinningLine(grid, 0, Constants.GRID_SIZE - 1, -1))
-                    {
-                        winnings += Constants.PAYOUTS[wagerPerLine];
-                    }
+                    winnings += IsWinningLine(grid, 0, 0, 1, 1) ? wagerPerLine * Constants.PAYOUTS[5] : 0;
+                    winnings += IsWinningLine(grid, 0, Constants.GRID_SIZE - 1, 1, -1) ? wagerPerLine * Constants.PAYOUTS[5] : 0;
                     break;
             }
 
@@ -132,42 +72,33 @@ namespace SlotMachine
         }
 
         /// <summary>
-        /// Checks if a line is winning based on the slot outcomes grid.
+        /// Checks if a line in the slot outcomes grid is a winning line.
         /// </summary>
         /// <param name="grid">The slot outcomes grid.</param>
-        /// <param name="row">The starting row index.</param>
-        /// <param name="column">The starting column index.</param>
-        /// <param name="step">The step for checking the next symbol.</param>
-        /// <returns>True if the line is winning; otherwise, false.</returns>
-        private static bool IsWinningLine(int[,] grid, int row, int column, int step)
+        /// <param name="row">The starting row of the line.</param>
+        /// <param name="column">The starting column of the line.</param>
+        /// <param name="rowStep">The step size for rows.</param>
+        /// <param name="columnStep">The step size for columns.</param>
+        /// <returns>True if the line is a winning line, otherwise false.</returns>
+        private static bool IsWinningLine(int[,] grid, int row, int column, int rowStep, int columnStep)
         {
-            int symbol = grid[row, column];
-            for (int i = 1; i < Constants.GRID_SIZE; i++)
+            try
             {
-                if (grid[row + i * step, column + i * step] != symbol)
+                int symbol = grid[row, column];
+                for (int i = 1; i < Constants.GRID_SIZE; i++)
                 {
-                    return false;
+                    if (grid[row + i * rowStep, column + i * columnStep] != symbol)
+                    {
+                        return false;
+                    }
                 }
+                return true;
             }
-            return true;
-        }
-
-        /// <summary>
-        /// Gets the number of lines to bet based on the bet choice.
-        /// </summary>
-        /// <param name="choice">The bet choice.</param>
-        /// <returns>The number of lines to bet.</returns>
-        private static int GetLinesToBet(BetChoice choice)
-        {
-            return choice switch
+            catch (IndexOutOfRangeException)
             {
-                BetChoice.CenterHorizontalLine => 1,
-                BetChoice.AllHorizontalLines => Constants.GRID_SIZE,
-                BetChoice.AllVerticalLines => Constants.GRID_SIZE,
-                BetChoice.BothDiagonals => 2,
-                BetChoice.AllLines => Constants.GRID_SIZE * 2 + 2,
-                _ => throw new ArgumentOutOfRangeException(nameof(choice), "Invalid betting choice")
-            };
+                // Log the error if necessary
+                return false;
+            }
         }
     }
 }
