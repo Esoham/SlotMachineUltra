@@ -1,4 +1,5 @@
-﻿namespace SlotMachine
+﻿using System;
+namespace SlotMachine
 {
     /// <summary>
     /// The main entry point for the Slot Machine game.
@@ -7,7 +8,7 @@
     {
         static void Main(string[] args)
         {
-            SlotMachineUI.StartGame();
+            SlotMachineGame.StartGame();
         }
     }
 }

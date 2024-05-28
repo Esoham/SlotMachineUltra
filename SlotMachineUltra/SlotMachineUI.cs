@@ -2,138 +2,136 @@
 namespace SlotMachine
 {
     /// <summary>
-    /// Class handling the user interface for the Slot Machine game.
+    /// Manages the user interface for the slot machine game.
     /// </summary>
     public static class SlotMachineUI
     {
-        /// <summary>
-        /// Starts the Slot Machine game.
-        /// </summary>
-        public static void StartGame()
+        public static void DisplayMessage(string message)
         {
-            int playerMoney = Constants.STARTING_PLAYER_MONEY;
-            Console.WriteLine(Constants.WELCOME_MESSAGE);
-
-            while (playerMoney > 0)
-            {
-                Console.WriteLine($"Current Money: ${playerMoney}");
-                BetChoice betChoice = GetPlayerChoice();
-                int linesToBet = GetLinesToBet(betChoice);
-                int maxBetPerLine = playerMoney / (linesToBet * Constants.MAX_BET_MULTIPLIER);
-                int wagerPerLine = GetWagerPerLine(maxBetPerLine);
-                int totalWager = wagerPerLine * linesToBet;
-
-                if (totalWager > playerMoney)
-                {
-                    Console.WriteLine(Constants.INVALID_WAGER_MESSAGE);
-                    continue;
-                }
-
-                playerMoney -= totalWager;
-                int[,] grid = SlotMachineGame.GenerateSlotOutcomes();
-                DisplayGrid(grid);
-                int totalWinnings = SlotMachineGame.CalculateWinnings(grid, betChoice, wagerPerLine);
-                playerMoney += totalWinnings;
-
-                DisplayRoundResult(totalWinnings, totalWager);
-            }
-
-            Console.WriteLine(Constants.GAME_OVER_MESSAGE);
+            Console.WriteLine(message);
         }
 
-        /// <summary>
-        /// Gets the player's bet choice.
-        /// </summary>
-        /// <returns>The player's bet choice.</returns>
-        private static BetChoice GetPlayerChoice()
+        public static BetChoice GetPlayerChoice()
         {
-            while (true)
+            Console.WriteLine("Choose your bet:");
+            foreach (var choice in Enum.GetValues(typeof(BetChoice)))
             {
-                Console.WriteLine("Choose your bet:");
-                foreach (BetChoice option in Enum.GetValues(typeof(BetChoice)))
-                {
-                    Console.WriteLine($"{(int)option}. {option.ToString().Replace('_', ' ')}");
-                }
-
-                if (int.TryParse(Console.ReadLine(), out int selectedChoice) && Enum.IsDefined(typeof(BetChoice), selectedChoice))
-                {
-                    return (BetChoice)selectedChoice;
-                }
-
+                Console.WriteLine($"{(int)choice}. {choice}");
+            }
+            int selectedChoice;
+            while (!int.TryParse(Console.ReadLine(), out selectedChoice) || !Enum.IsDefined(typeof(BetChoice), selectedChoice))
+            {
                 Console.WriteLine("Invalid choice. Please try again.");
             }
+            return (BetChoice)selectedChoice;
         }
 
-        /// <summary>
-        /// Gets the wager per line from the player.
-        /// </summary>
-        /// <param name="maxBetPerLine">The maximum bet per line.</param>
-        /// <returns>The wager per line.</returns>
-        private static int GetWagerPerLine(int maxBetPerLine)
+        public static int GetWagerPerLine(int playerMoney, int maxPerLine)
         {
+            int wagerPerLine;
             while (true)
             {
-                Console.Write($"Enter your wager per line (max ${maxBetPerLine}): ");
-                if (int.TryParse(Console.ReadLine(), out int wagerPerLine) && wagerPerLine >= 1 && wagerPerLine <= maxBetPerLine)
+                Console.Write($"Enter your wager per line (1 to {maxPerLine}): ");
+                if (int.TryParse(Console.ReadLine(), out wagerPerLine) && wagerPerLine >= 1 && wagerPerLine <= maxPerLine)
                 {
                     return wagerPerLine;
                 }
-
-                Console.WriteLine(Constants.INVALID_WAGER_MESSAGE);
+                Console.WriteLine("Invalid wager. Please try again.");
             }
         }
 
-        /// <summary>
-        /// Displays the slot outcomes grid.
-        /// </summary>
-        /// <param name="grid">The slot outcomes grid.</param>
-        public static void DisplayGrid(int[,] grid)
+        public static void DisplayResult(int[,] grid, int winnings, int totalWager, BetChoice betChoice)
         {
-            Console.WriteLine("Slot Machine Outcome:");
+            // Display the slot grid
+            Console.WriteLine("Slot Grid:");
             for (int i = 0; i < Constants.GRID_SIZE; i++)
             {
                 for (int j = 0; j < Constants.GRID_SIZE; j++)
                 {
-                    Console.Write($"{grid[i, j]}{(j < Constants.GRID_SIZE - 1 ? " | " : "")}");
+                    Console.Write(grid[i, j] + " ");
                 }
-                Console.WriteLine(i < Constants.GRID_SIZE - 1 ? "\n---+---+---" : "\n");
+                Console.WriteLine();
             }
-        }
 
-        /// <summary>
-        /// Displays the result of the round.
-        /// </summary>
-        /// <param name="winnings">The total winnings.</param>
-        /// <param name="wager">The total wager.</param>
-        public static void DisplayRoundResult(int winnings, int wager)
-        {
             if (winnings > 0)
             {
-                Console.WriteLine($"You won ${winnings}! Your total wager was ${wager}.");
+                Console.WriteLine($"You won ${winnings}! Your total wager was ${totalWager}.");
+                DisplayWinningLines(grid, betChoice);
             }
             else
             {
-                Console.WriteLine($"You did not win anything. Your total wager was ${wager}.");
+                Console.WriteLine($"You did not win anything. Your total wager was ${totalWager}.");
+            }
+        }
+
+        private static void DisplayWinningLines(int[,] grid, BetChoice betChoice)
+        {
+            Console.WriteLine("Winning Lines:");
+
+            if (betChoice == BetChoice.CenterHorizontalLine || betChoice == BetChoice.AllLines)
+            {
+                DisplayLine(grid, 1, 0, 0, 1);
+            }
+
+            if (betChoice == BetChoice.AllHorizontalLines || betChoice == BetChoice.AllLines)
+            {
+                for (int row = 0; row < Constants.GRID_SIZE; row++)
+                {
+                    DisplayLine(grid, row, 0, 0, 1);
+                }
+            }
+
+            if (betChoice == BetChoice.AllVerticalLines || betChoice == BetChoice.AllLines)
+            {
+                for (int col = 0; col < Constants.GRID_SIZE; col++)
+                {
+                    DisplayLine(grid, 0, col, 1, 0);
+                }
+            }
+
+            if (betChoice == BetChoice.BothDiagonals || betChoice == BetChoice.AllLines)
+            {
+                DisplayLine(grid, 0, 0, 1, 1);
+                DisplayLine(grid, 0, Constants.GRID_SIZE - 1, 1, -1);
+            }
+        }
+
+        private static void DisplayLine(int[,] grid, int startRow, int startCol, int rowStep, int colStep)
+        {
+            Console.Write($"({startRow}, {startCol}) -> ");
+            for (int i = 0; i < Constants.GRID_SIZE; i++)
+            {
+                Console.Write(grid[startRow, startCol] + " ");
+                startRow += rowStep;
+                startCol += colStep;
             }
             Console.WriteLine();
         }
 
-        /// <summary>
-        /// Determines the number of lines to bet based on the player's bet choice.
-        /// </summary>
-        /// <param name="choice">The player's bet choice.</param>
-        /// <returns>The number of lines to bet.</returns>
-        private static int GetLinesToBet(BetChoice choice)
+        public static void DisplayGameOver()
         {
-            switch (choice)
+            Console.WriteLine(Constants.GAME_OVER_MESSAGE);
+        }
+
+        public static void DisplayGameRulesAndPayouts()
+        {
+            Console.WriteLine("Game Rules and Payout Table:");
+            Console.WriteLine("Bet Choice\tConsecutive Symbols\tPayout Multiplier");
+            foreach (var betChoice in Constants.PAYOUTS)
             {
-                case BetChoice.CenterHorizontalLine: return 1;
-                case BetChoice.AllHorizontalLines:
-                case BetChoice.AllVerticalLines: return Constants.GRID_SIZE;
-                case BetChoice.BothDiagonals: return 2;
-                case BetChoice.AllLines: return Constants.GRID_SIZE * 2 + 2;
-                default: throw new ArgumentOutOfRangeException(nameof(choice), "Invalid betting choice");
+                Console.WriteLine($"{betChoice.Key}:");
+                foreach (var payout in betChoice.Value)
+                {
+                    Console.WriteLine($"\t\t{payout.Key}\t\t{payout.Value}x");
+                }
             }
+        }
+
+        public static bool PlayAgain()
+        {
+            Console.Write("Do you want to play again? (y/n): ");
+            string choice = Console.ReadLine().ToLower();
+            return choice == "y" || choice == "yes";
         }
     }
 }

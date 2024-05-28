@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+
 namespace SlotMachine
 {
     /// <summary>
@@ -17,11 +18,16 @@ namespace SlotMachine
         public const string INVALID_WAGER_MESSAGE = "Invalid wager. Please try again.";
 
         /// <summary>
-        /// Dictionary representing the payout values for different bet choices.
+        /// Nested dictionary representing the payout values for different bet choices and symbol combinations.
+        /// The outer dictionary key represents the BetChoice, and the inner dictionary key represents the number of consecutive symbols.
         /// </summary>
-        public static readonly Dictionary<int, int> PAYOUTS = new Dictionary<int, int>
+        public static readonly Dictionary<BetChoice, Dictionary<int, int>> PAYOUTS = new Dictionary<BetChoice, Dictionary<int, int>>
         {
-            {1, 2}, {2, 3}, {3, 4}, {4, 5}, {5, 10}
+            { BetChoice.CenterHorizontalLine, new Dictionary<int, int> { { 3, 2 } } },
+            { BetChoice.AllHorizontalLines, new Dictionary<int, int> { { 3, 3 } } },
+            { BetChoice.AllVerticalLines, new Dictionary<int, int> { { 3, 4 } } },
+            { BetChoice.BothDiagonals, new Dictionary<int, int> { { 3, 5 } } },
+            { BetChoice.AllLines, new Dictionary<int, int> { { 3, 10 } } }
         };
     }
 }
