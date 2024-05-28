@@ -1,119 +1,117 @@
 ﻿using System;
+
 namespace SlotMachine
 {
-    /// <summary>
-    /// Manages the game logic for the slot machine.
-    /// </summary>
     public static class SlotMachineGame
     {
         private static readonly Random random = new Random();
 
-        /// <summary>
-        /// Starts the slot machine game.
-        /// </summary>
         public static void StartGame()
         {
-            int playerMoney = Constants.STARTING_PLAYER_MONEY;
-            SlotMachineUI.DisplayMessage(Constants.WELCOME_MESSAGE);
+            int playerMoney = Configurations.StartingPlayerMoney;
+            SlotMachineUI.DisplayMessage(Configurations.WelcomeMessage);
             SlotMachineUI.DisplayGameRulesAndPayouts();
 
-            while (playerMoney > 0)
+            while (true)
             {
-                SlotMachineUI.DisplayMessage($"Current Money: ${playerMoney}");
+                // Reset player money to starting amount at the beginning of each game loop
+                playerMoney = Configurations.StartingPlayerMoney;
+
+                SlotMachineUI.DisplayMessage(string.Format(Configurations.CurrentMoneyMessage, playerMoney));
                 BetChoice betChoice = SlotMachineUI.GetPlayerChoice();
                 int linesToBet = GetLinesToBet(betChoice);
-                int maxPerLine = playerMoney / (linesToBet * Constants.MAX_BET_MULTIPLIER);
+                int maxPerLine = playerMoney / (linesToBet * Configurations.MaxBetMultiplier);
                 int wagerPerLine = SlotMachineUI.GetWagerPerLine(playerMoney, maxPerLine);
 
-                // Check if the total wager exceeds the player's money
                 int totalWager = wagerPerLine * linesToBet;
                 if (totalWager > playerMoney)
                 {
-                    SlotMachineUI.DisplayMessage(Constants.INVALID_WAGER_MESSAGE);
+                    SlotMachineUI.DisplayMessage(Configurations.InvalidWagerMessage);
                     continue;
                 }
 
-                // Generate slot grid and calculate winnings
                 int[,] grid = GenerateSlotGrid();
                 int winnings = CalculateWinnings(grid, betChoice, wagerPerLine);
-                playerMoney += winnings - totalWager; // Update player's money
+                playerMoney += winnings - totalWager;
 
                 SlotMachineUI.DisplayResult(grid, winnings, totalWager, betChoice);
 
-                // Ask the player if they want to play again
-                if (playerMoney > 0 && !SlotMachineUI.PlayAgain())
+                if (winnings == 0)
                 {
-                    break;
+                    SlotMachineUI.DisplayMessage(Configurations.NoWinMessage);
+                }
+
+                if (playerMoney <= 0)
+                {
+                    SlotMachineUI.DisplayGameOver();
+                    if (!SlotMachineUI.PlayAgain())
+                    {
+                        break;  // Exit the loop and end the game if the player does not want to play again
+                    }
+                }
+                else if (!SlotMachineUI.PlayAgain())
+                {
+                    break;  // Exit the loop and end the game if the player does not want to play again
                 }
             }
-
-            SlotMachineUI.DisplayGameOver();
         }
 
         private static int[,] GenerateSlotGrid()
         {
-            int[,] grid = new int[Constants.GRID_SIZE, Constants.GRID_SIZE];
-
-            for (int i = 0; i < Constants.GRID_SIZE; i++)
+            int[,] grid = new int[Configurations.GridSize, Configurations.GridSize];
+            for (int i = 0; i < Configurations.GridSize; i++)
             {
-                for (int j = 0; j < Constants.GRID_SIZE; j++)
+                for (int j = 0; j < Configurations.GridSize; j++)
                 {
-                    grid[i, j] = random.Next(Constants.SYMBOL_MIN, Constants.SYMBOL_MAX + 1);
+                    grid[i, j] = random.Next(1, Configurations.SymbolsCount + 1);
                 }
             }
-
             return grid;
         }
 
-        private static int CalculateWinnings(int[,] grid, BetChoice choice, int wagerPerLine)
+        private static int CalculateWinnings(int[,] grid, BetChoice betChoice, int wagerPerLine)
         {
-            int winnings = 0;
+            int baseWinnings = CalculateBaseWinnings(grid, betChoice, wagerPerLine);
 
-            // Calculate winnings for the center horizontal line
-            if (choice == BetChoice.CenterHorizontalLine || choice == BetChoice.AllLines)
+            if (random.NextDouble() < Configurations.MultiplierChance)
             {
-                winnings += CalculateLineWinnings(grid, 1, 0, 0, 1, wagerPerLine);
+                baseWinnings *= Configurations.MultiplierValue;
+                SlotMachineUI.DisplayMessage(Configurations.MultiplierMessage);
             }
 
-            // Calculate winnings for all horizontal lines
-            if (choice == BetChoice.AllHorizontalLines || choice == BetChoice.AllLines)
-            {
-                for (int row = 0; row < Constants.GRID_SIZE; row++)
-                {
-                    winnings += CalculateLineWinnings(grid, row, 0, 0, 1, wagerPerLine);
-                }
-            }
-
-            // Calculate winnings for all vertical lines
-            if (choice == BetChoice.AllVerticalLines || choice == BetChoice.AllLines)
-            {
-                for (int col = 0; col < Constants.GRID_SIZE; col++)
-                {
-                    winnings += CalculateLineWinnings(grid, 0, col, 1, 0, wagerPerLine);
-                }
-            }
-
-            // Calculate winnings for both diagonals
-            if (choice == BetChoice.BothDiagonals || choice == BetChoice.AllLines)
-            {
-                winnings += CalculateLineWinnings(grid, 0, 0, 1, 1, wagerPerLine);
-                winnings += CalculateLineWinnings(grid, 0, Constants.GRID_SIZE - 1, 1, -1, wagerPerLine);
-            }
-
-            return winnings;
+            return baseWinnings;
         }
 
-        private static int CalculateLineWinnings(int[,] grid, int startRow, int startCol, int rowStep, int colStep, int wagerPerLine)
+        private static int CalculateBaseWinnings(int[,] grid, BetChoice betChoice, int wagerPerLine)
         {
-            int firstSymbol = grid[startRow, startCol];
-            for (int i = 1; i < Constants.GRID_SIZE; i++)
+            int matches = 0;
+
+            for (int i = 0; i < Configurations.GridSize; i++)
             {
-                if (grid[startRow + i * rowStep, startCol + i * colStep] != firstSymbol)
+                bool match = true;
+                int symbol = grid[i, 0];
+
+                for (int j = 1; j < Configurations.GridSize; j++)
                 {
-                    return 0;
+                    if (grid[i, j] != symbol)
+                    {
+                        match = false;
+                        break;
+                    }
+                }
+
+                if (match)
+                {
+                    matches++;
                 }
             }
-            return Constants.PAYOUTS[BetChoice.AllLines][Constants.GRID_SIZE] * wagerPerLine;
+
+            if (matches > 0)
+            {
+                return matches * wagerPerLine * Configurations.WinMultiplier;  // Example multiplier, adjust as needed
+            }
+
+            return 0;
         }
 
         private static int GetLinesToBet(BetChoice choice)
@@ -122,11 +120,11 @@ namespace SlotMachine
             {
                 case BetChoice.CenterHorizontalLine: return 1;
                 case BetChoice.AllHorizontalLines:
-                case BetChoice.AllVerticalLines: return Constants.GRID_SIZE;
+                case BetChoice.AllVerticalLines: return Configurations.GridSize;
                 case BetChoice.BothDiagonals: return 2;
-                case BetChoice.AllLines: return 2 * Constants.GRID_SIZE + 2; // All lines plus two diagonals
+                case BetChoice.AllLines: return 2 * Configurations.GridSize + 2; // All lines plus two diagonals
                 default:
-                    throw new ArgumentOutOfRangeException(nameof(choice), "Invalid betting choice");
+                    throw new ArgumentOutOfRangeException(nameof(choice), Configurations.InvalidBetChoiceMessage);
             }
         }
     }

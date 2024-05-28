@@ -1,9 +1,6 @@
 ﻿using System;
 namespace SlotMachine
 {
-    /// <summary>
-    /// Manages the user interface for the slot machine game.
-    /// </summary>
     public static class SlotMachineUI
     {
         public static void DisplayMessage(string message)
@@ -13,124 +10,67 @@ namespace SlotMachine
 
         public static BetChoice GetPlayerChoice()
         {
-            Console.WriteLine("Choose your bet:");
+            Console.WriteLine(Configurations.ChooseBetMessage);
             foreach (var choice in Enum.GetValues(typeof(BetChoice)))
             {
                 Console.WriteLine($"{(int)choice}. {choice}");
             }
-            int selectedChoice;
-            while (!int.TryParse(Console.ReadLine(), out selectedChoice) || !Enum.IsDefined(typeof(BetChoice), selectedChoice))
+
+            while (true)
             {
-                Console.WriteLine("Invalid choice. Please try again.");
+                Console.Write(Configurations.EnterChoiceMessage);
+                string? input = Console.ReadLine();
+                if (int.TryParse(input, out int selectedChoice) && Enum.IsDefined(typeof(BetChoice), selectedChoice))
+                {
+                    return (BetChoice)selectedChoice;
+                }
+                Console.WriteLine(Configurations.InvalidChoiceMessage);
             }
-            return (BetChoice)selectedChoice;
         }
 
         public static int GetWagerPerLine(int playerMoney, int maxPerLine)
         {
-            int wagerPerLine;
             while (true)
             {
-                Console.Write($"Enter your wager per line (1 to {maxPerLine}): ");
-                if (int.TryParse(Console.ReadLine(), out wagerPerLine) && wagerPerLine >= 1 && wagerPerLine <= maxPerLine)
+                Console.Write(string.Format(Configurations.EnterWagerMessage, maxPerLine));
+                string? input = Console.ReadLine();
+                if (int.TryParse(input, out int wagerPerLine) && wagerPerLine >= 1 && wagerPerLine <= maxPerLine)
                 {
                     return wagerPerLine;
                 }
-                Console.WriteLine("Invalid wager. Please try again.");
+                Console.WriteLine(Configurations.InvalidWagerMessage);
             }
         }
 
         public static void DisplayResult(int[,] grid, int winnings, int totalWager, BetChoice betChoice)
         {
-            // Display the slot grid
-            Console.WriteLine("Slot Grid:");
-            for (int i = 0; i < Constants.GRID_SIZE; i++)
+            Console.WriteLine(Configurations.SlotGridMessage);
+            for (int i = 0; i < Configurations.GridSize; i++)
             {
-                for (int j = 0; j < Constants.GRID_SIZE; j++)
+                for (int j = 0; j < Configurations.GridSize; j++)
                 {
                     Console.Write(grid[i, j] + " ");
                 }
                 Console.WriteLine();
             }
 
-            if (winnings > 0)
-            {
-                Console.WriteLine($"You won ${winnings}! Your total wager was ${totalWager}.");
-                DisplayWinningLines(grid, betChoice);
-            }
-            else
-            {
-                Console.WriteLine($"You did not win anything. Your total wager was ${totalWager}.");
-            }
-        }
-
-        private static void DisplayWinningLines(int[,] grid, BetChoice betChoice)
-        {
-            Console.WriteLine("Winning Lines:");
-
-            if (betChoice == BetChoice.CenterHorizontalLine || betChoice == BetChoice.AllLines)
-            {
-                DisplayLine(grid, 1, 0, 0, 1);
-            }
-
-            if (betChoice == BetChoice.AllHorizontalLines || betChoice == BetChoice.AllLines)
-            {
-                for (int row = 0; row < Constants.GRID_SIZE; row++)
-                {
-                    DisplayLine(grid, row, 0, 0, 1);
-                }
-            }
-
-            if (betChoice == BetChoice.AllVerticalLines || betChoice == BetChoice.AllLines)
-            {
-                for (int col = 0; col < Constants.GRID_SIZE; col++)
-                {
-                    DisplayLine(grid, 0, col, 1, 0);
-                }
-            }
-
-            if (betChoice == BetChoice.BothDiagonals || betChoice == BetChoice.AllLines)
-            {
-                DisplayLine(grid, 0, 0, 1, 1);
-                DisplayLine(grid, 0, Constants.GRID_SIZE - 1, 1, -1);
-            }
-        }
-
-        private static void DisplayLine(int[,] grid, int startRow, int startCol, int rowStep, int colStep)
-        {
-            Console.Write($"({startRow}, {startCol}) -> ");
-            for (int i = 0; i < Constants.GRID_SIZE; i++)
-            {
-                Console.Write(grid[startRow, startCol] + " ");
-                startRow += rowStep;
-                startCol += colStep;
-            }
-            Console.WriteLine();
-        }
-
-        public static void DisplayGameOver()
-        {
-            Console.WriteLine(Constants.GAME_OVER_MESSAGE);
+            Console.WriteLine(string.Format(Configurations.WinningsMessage, winnings, totalWager, betChoice));
         }
 
         public static void DisplayGameRulesAndPayouts()
         {
-            Console.WriteLine("Game Rules and Payout Table:");
-            Console.WriteLine("Bet Choice\tConsecutive Symbols\tPayout Multiplier");
-            foreach (var betChoice in Constants.PAYOUTS)
-            {
-                Console.WriteLine($"{betChoice.Key}:");
-                foreach (var payout in betChoice.Value)
-                {
-                    Console.WriteLine($"\t\t{payout.Key}\t\t{payout.Value}x");
-                }
-            }
+            Console.WriteLine(Configurations.GameRulesMessage);
+        }
+
+        public static void DisplayGameOver()
+        {
+            Console.WriteLine(Configurations.GameOverMessage);
         }
 
         public static bool PlayAgain()
         {
-            Console.Write("Do you want to play again? (y/n): ");
-            string choice = Console.ReadLine().ToLower();
+            Console.Write(Configurations.PlayAgainMessage);
+            string? choice = Console.ReadLine()?.ToLower();
             return choice == "y" || choice == "yes";
         }
     }

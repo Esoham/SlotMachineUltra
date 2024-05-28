@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace SlotMachine
+﻿namespace SlotMachine
 {
     /// <summary>
     /// Class containing constants used throughout the slot machine game.
