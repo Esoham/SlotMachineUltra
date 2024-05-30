@@ -5,6 +5,8 @@ VisualStudioVersion = 25.0.1706.11
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SlotMachineUltra", "SlotMachineUltra\SlotMachineUltra.csproj", "{3951EB96-7571-401D-9B4F-603B6856B9DB}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SlotMachineGame.nUnitTest", "SlotMachineGame.nUnitTest\SlotMachineGame.nUnitTest.csproj", "{D2722DF8-36D4-4073-832B-07C3AC34FCFD}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{3951EB96-7571-401D-9B4F-603B6856B9DB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3951EB96-7571-401D-9B4F-603B6856B9DB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3951EB96-7571-401D-9B4F-603B6856B9DB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D2722DF8-36D4-4073-832B-07C3AC34FCFD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D2722DF8-36D4-4073-832B-07C3AC34FCFD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D2722DF8-36D4-4073-832B-07C3AC34FCFD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D2722DF8-36D4-4073-832B-07C3AC34FCFD}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
