@@ -1,65 +1,50 @@
 ﻿using System;
-namespace SlotMachine
+using SlotMachine;
+
+namespace SlotMachineUltra
 {
     class Program
     {
+        /// <summary>
+        /// The main entry point of the application.
+        /// </summary>
+        /// <param name="args">The command-line arguments.</param>
         static void Main(string[] args)
         {
-            try
+            Console.WriteLine(Constants.WelcomeMessage);
+
+            // Initialize the slot machine game with the default grid size.
+            SlotMachineGame game = new SlotMachineGame(Constants.GridSize);
+
+            // Generate the grid with random symbols.
+            game.GenerateGrid();
+
+            // Display the generated grid to the console.
+            game.DisplayGrid();
+
+            // Get the number of lines to bet on
+            int linesToBet = game.GetLinesToBet();
+
+            // Get the wager per line from the player
+            int wagerPerLine = SlotMachineUI.GetWagerPerLine(Constants.DefaultWager);
+
+            // Get the player's betting choice
+            BetChoice betChoice = SlotMachineUI.GetPlayerChoice();
+
+            // Calculate the winnings based on the grid and bet
+            int winnings = game.CalculateWinnings(betChoice, wagerPerLine);
+
+            // Display the result
+            SlotMachineUI.DisplayResult(game.GetGrid(), winnings, wagerPerLine * linesToBet, betChoice);
+
+            // Display game over message
+            SlotMachineUI.DisplayGameOver();
+
+            // Ask if the player wants to play again
+            if (SlotMachineUI.PlayAgain())
             {
-                SlotMachineUI.DisplayMessage(Constants.WelcomeMessage);
-                SlotMachineUI.DisplayGameRulesAndPayouts();
-
-                bool continuePlaying = true;
-                while (continuePlaying)
-                {
-                    int playerMoney = Constants.StartingPlayerMoney;
-
-                    while (playerMoney > 0)
-                    {
-                        SlotMachineUI.DisplayMessage(string.Format(Constants.CurrentMoneyMessage, playerMoney));
-                        BetChoice betChoice = SlotMachineUI.GetPlayerChoice();
-                        int linesToBet = SlotMachineGame.GetLinesToBet(betChoice);
-                        int maxPerLine = playerMoney / (linesToBet * Constants.MaxBetMultiplier);
-                        int wagerPerLine = SlotMachineUI.GetWagerPerLine(playerMoney, maxPerLine);
-
-                        int totalWager = wagerPerLine * linesToBet;
-                        if (totalWager > playerMoney)
-                        {
-                            SlotMachineUI.DisplayMessage(Constants.InvalidWagerMessage);
-                            continue;
-                        }
-
-                        int[,] grid = SlotMachineGame.GenerateSlotGrid();
-                        int winnings = SlotMachineGame.CalculateWinnings(grid, betChoice, wagerPerLine);
-                        playerMoney += winnings - totalWager;
-
-                        SlotMachineUI.DisplayResult(grid, winnings, totalWager, betChoice);
-
-                        if (winnings == 0)
-                        {
-                            SlotMachineUI.DisplayMessage(Constants.NoWinMessage);
-                        }
-                    }
-
-                    SlotMachineUI.DisplayGameOver();
-                    continuePlaying = SlotMachineUI.PlayAgain();
-                    if (continuePlaying)
-                    {
-                        playerMoney = Constants.StartingPlayerMoney;
-                    }
-                }
-            }
-            catch (ArgumentOutOfRangeException ex)
-            {
-                Console.WriteLine("Invalid input: " + ex.Message);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("An unexpected error occurred: " + ex.Message);
+                Main(args); // Restart the game
             }
         }
     }
 }
-
-

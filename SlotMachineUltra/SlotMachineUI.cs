@@ -1,6 +1,6 @@
 ﻿using System;
-
-namespace SlotMachine
+using SlotMachine;
+namespace SlotMachineUltra
 {
     /// <summary>
     /// Handles all user interactions for the slot machine game.
@@ -43,10 +43,9 @@ namespace SlotMachine
         /// <summary>
         /// Gets the wager per line from the player.
         /// </summary>
-        /// <param name="playerMoney">The player's current money.</param>
         /// <param name="maxPerLine">The maximum wager per line.</param>
         /// <returns>The wager per line.</returns>
-        public static int GetWagerPerLine(int playerMoney, int maxPerLine)
+        public static int GetWagerPerLine(int maxPerLine)
         {
             while (true)
             {
@@ -67,7 +66,7 @@ namespace SlotMachine
         /// <param name="winnings">The amount won.</param>
         /// <param name="totalWager">The total wager amount.</param>
         /// <param name="betChoice">The player's betting choice.</param>
-        public static void DisplayResult(int[,] grid, int winnings, int totalWager, BetChoice betChoice)
+        public static void DisplayResult(string[,] grid, int winnings, int totalWager, BetChoice betChoice)
         {
             Console.WriteLine(Constants.SlotGridMessage);
             for (int i = 0; i < Constants.GridSize; i++)
