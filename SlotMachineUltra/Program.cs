@@ -11,10 +11,10 @@ namespace SlotMachineUltra
         /// <param name="args">The command-line arguments.</param>
         static void Main(string[] args)
         {
-            Console.WriteLine(Constants.WelcomeMessage);
+            Console.WriteLine(Messages.WELCOME_MESSAGE);
 
             // Initialize the slot machine game with the default grid size.
-            SlotMachineGame game = new SlotMachineGame(Constants.GridSize);
+            SlotMachineGame game = new SlotMachineGame(Constants.GRID_SIZE);
 
             // Generate the grid with random symbols.
             game.GenerateGrid();
@@ -26,7 +26,7 @@ namespace SlotMachineUltra
             int linesToBet = game.GetLinesToBet();
 
             // Get the wager per line from the player
-            int wagerPerLine = SlotMachineUI.GetWagerPerLine(Constants.DefaultWager);
+            int wagerPerLine = SlotMachineUI.GetWagerPerLine(Constants.DEFAULT_WAGER);
 
             // Get the player's betting choice
             BetChoice betChoice = SlotMachineUI.GetPlayerChoice();

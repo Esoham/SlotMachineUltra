@@ -22,7 +22,7 @@ namespace SlotMachineUltra
         /// <returns>The player's betting choice.</returns>
         public static BetChoice GetPlayerChoice()
         {
-            Console.WriteLine(Constants.ChooseBetMessage);
+            Console.WriteLine(Messages.CHOOSE_BET_MESSAGE);
             foreach (var choice in Enum.GetValues(typeof(BetChoice)))
             {
                 Console.WriteLine($"{(int)choice}. {choice}");
@@ -30,13 +30,13 @@ namespace SlotMachineUltra
 
             while (true)
             {
-                Console.Write(Constants.EnterChoiceMessage);
+                Console.Write(Messages.ENTER_CHOICE_MESSAGE);
                 string? input = Console.ReadLine();
                 if (int.TryParse(input, out int selectedChoice) && Enum.IsDefined(typeof(BetChoice), selectedChoice))
                 {
                     return (BetChoice)selectedChoice;
                 }
-                Console.WriteLine(Constants.InvalidChoiceMessage);
+                Console.WriteLine(Messages.INVALID_CHOICE_MESSAGE);
             }
         }
 
@@ -49,13 +49,13 @@ namespace SlotMachineUltra
         {
             while (true)
             {
-                Console.Write(string.Format(Constants.EnterWagerMessage, maxPerLine));
+                Console.Write(string.Format(Messages.ENTER_WAGER_MESSAGE, maxPerLine));
                 string? input = Console.ReadLine();
                 if (int.TryParse(input, out int wagerPerLine) && wagerPerLine >= 1 && wagerPerLine <= maxPerLine)
                 {
                     return wagerPerLine;
                 }
-                Console.WriteLine(Constants.InvalidWagerMessage);
+                Console.WriteLine(Messages.INVALID_WAGER_MESSAGE);
             }
         }
 
@@ -68,17 +68,17 @@ namespace SlotMachineUltra
         /// <param name="betChoice">The player's betting choice.</param>
         public static void DisplayResult(string[,] grid, int winnings, int totalWager, BetChoice betChoice)
         {
-            Console.WriteLine(Constants.SlotGridMessage);
-            for (int i = 0; i < Constants.GridSize; i++)
+            Console.WriteLine(Messages.SLOT_GRID_MESSAGE);
+            for (int i = 0; i < Constants.GRID_SIZE; i++)
             {
-                for (int j = 0; j < Constants.GridSize; j++)
+                for (int j = 0; j < Constants.GRID_SIZE; j++)
                 {
                     Console.Write(grid[i, j] + " ");
                 }
                 Console.WriteLine();
             }
 
-            Console.WriteLine(string.Format(Constants.WinningsMessage, winnings, totalWager, betChoice));
+            Console.WriteLine(string.Format(Messages.WINNINGS_MESSAGE, winnings, totalWager, betChoice));
         }
 
         /// <summary>
@@ -86,7 +86,7 @@ namespace SlotMachineUltra
         /// </summary>
         public static void DisplayGameRulesAndPayouts()
         {
-            Console.WriteLine(Constants.GameRulesMessage);
+            Console.WriteLine(Messages.GAME_RULES_MESSAGE);
         }
 
         /// <summary>
@@ -94,7 +94,7 @@ namespace SlotMachineUltra
         /// </summary>
         public static void DisplayGameOver()
         {
-            Console.WriteLine(Constants.GameOverMessage);
+            Console.WriteLine(Messages.GAME_OVER_MESSAGE);
         }
 
         /// <summary>
@@ -103,7 +103,7 @@ namespace SlotMachineUltra
         /// <returns>True if the player wants to play again, otherwise false.</returns>
         public static bool PlayAgain()
         {
-            Console.Write(Constants.PlayAgainMessage);
+            Console.Write(Messages.PLAY_AGAIN_MESSAGE);
             string? choice = Console.ReadLine()?.ToLower();
             return choice == "y" || choice == "yes";
         }

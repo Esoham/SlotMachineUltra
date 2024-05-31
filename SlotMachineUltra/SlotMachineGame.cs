@@ -10,7 +10,7 @@ namespace SlotMachineUltra
         /// <summary>
         /// Gets the size of the grid.
         /// </summary>
-        public int GRID_SIZE { get; private set; }
+        public int GridSize { get; private set; }
 
         private string[,] grid;
 
@@ -20,8 +20,8 @@ namespace SlotMachineUltra
         /// <param name="gridSize">The size of the grid.</param>
         public SlotMachineGame(int gridSize)
         {
-            GRID_SIZE = gridSize;
-            grid = new string[GRID_SIZE, GRID_SIZE];
+            GridSize = gridSize;
+            grid = new string[GridSize, GridSize];
         }
 
         /// <summary>
@@ -32,9 +32,9 @@ namespace SlotMachineUltra
             Random random = new Random();
             string[] symbols = { "A", "B", "C", "D", "E", "F", "G" };
 
-            for (int i = 0; i < GRID_SIZE; i++)
+            for (int i = 0; i < GridSize; i++)
             {
-                for (int j = 0; j < GRID_SIZE; j++)
+                for (int j = 0; j < GridSize; j++)
                 {
                     grid[i, j] = symbols[random.Next(symbols.Length)];
                 }
@@ -47,7 +47,7 @@ namespace SlotMachineUltra
         /// <returns>The number of lines to bet on.</returns>
         public int GetLinesToBet()
         {
-            return GRID_SIZE;
+            return GridSize;
         }
 
         /// <summary>
@@ -59,7 +59,7 @@ namespace SlotMachineUltra
         public int CalculateWinnings(BetChoice betChoice, int wagerPerLine)
         {
             int matches = CheckMatches();
-            return matches * wagerPerLine * Constants.WinMultiplier;
+            return matches * wagerPerLine * Constants.WIN_MULTIPLIER;
         }
 
         /// <summary>
@@ -72,7 +72,7 @@ namespace SlotMachineUltra
 
             // Check primary diagonal
             bool primaryDiagonalMatch = true;
-            for (int i = 1; i < GRID_SIZE; i++)
+            for (int i = 1; i < GridSize; i++)
             {
                 if (grid[i, i] != grid[0, 0])
                 {
@@ -87,9 +87,9 @@ namespace SlotMachineUltra
 
             // Check secondary diagonal
             bool secondaryDiagonalMatch = true;
-            for (int i = 1; i < GRID_SIZE; i++)
+            for (int i = 1; i < GridSize; i++)
             {
-                if (grid[i, GRID_SIZE - i - 1] != grid[0, GRID_SIZE - 1])
+                if (grid[i, GridSize - i - 1] != grid[0, GridSize - 1])
                 {
                     secondaryDiagonalMatch = false;
                     break;
@@ -108,9 +108,9 @@ namespace SlotMachineUltra
         /// </summary>
         public void DisplayGrid()
         {
-            for (int i = 0; i < GRID_SIZE; i++)
+            for (int i = 0; i < GridSize; i++)
             {
-                for (int j = 0; j < GRID_SIZE; j++)
+                for (int j = 0; j < GridSize; j++)
                 {
                     Console.Write(grid[i, j] + " ");
                 }
